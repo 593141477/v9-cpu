@@ -137,12 +137,37 @@ alltraps()
 
 setup_user_paging()
 {
-  //YOUR CODE: lec7-spoc challenge-part2
+  uint i, j, k;
+  uint *u_tbl;
+  
+  pg_dir = (int *)((((int)&pg_mem) + 4095) & -4096);
+  u_tbl = pg_dir + 1024*16;
+
+
+  pg_dir[(uint)USRSTART>>22] = (uint)u_tbl | PTE_P | PTE_W;
+  for (k=0;k<1024;k++) 
+    u_tbl[k] = (k<<12) | PTE_P | PTE_W;
 }
   
 setup_kernel_paging()
 {
-  //YOUR CODE: lec7-spoc challenge-part1
+
+  uint i, j, k;
+  
+  pg_dir = (int *)((((int)&pg_mem) + 4095) & -4096);
+  pg_tbl[0] = pg_dir + 1024;
+  for (i = 1; i < 16; ++i)
+  {
+    pg_tbl[i] = pg_tbl[i-1]+1024;
+  }
+
+  for (i=0, j=KERSTART; i<16; i++, j+=PAGE*1024) {
+    pg_dir[j>>22] = (uint)pg_tbl[i] | PTE_P | PTE_W;
+    for (k=0;k<1024;k++) 
+      pg_tbl[i][k] = (k<<12) | PTE_P | PTE_W;
+  }
+
+  pg_dir[0] = pg_dir[(uint)KERSTART>>22];
 }
 
 main()
@@ -174,7 +199,7 @@ main()
   // reposition stack within first 16M
   asm(LI, 4*1024*1024); // a = 4M
   asm(SSP); // sp = a
-  printf("set page table....\n"); 
+  printf("set page table....\n");
   setup_kernel_paging();
   setup_user_paging();
   printf("set page table over\n"); 
