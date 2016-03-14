@@ -145,8 +145,9 @@ setup_user_paging()
 
 
   pg_dir[(uint)USRSTART>>22] = (uint)u_tbl | PTE_P | PTE_W;
-  for (k=0;k<1024;k++) 
-    u_tbl[k] = (k<<12) | PTE_P | PTE_W;
+  for (k=0, j=USRPHY;k<1024;k++, j+=PAGE) {
+    u_tbl[k] = (j>>12) | PTE_P | PTE_W;
+  }
 }
   
 setup_kernel_paging()
