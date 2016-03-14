@@ -141,12 +141,12 @@ setup_user_paging()
   uint *u_tbl;
   
   pg_dir = (int *)((((int)&pg_mem) + 4095) & -4096);
-  u_tbl = pg_dir + 1024*16;
+  u_tbl = pg_dir + 1024*17;
 
 
-  pg_dir[(uint)USRSTART>>22] = (uint)u_tbl | PTE_P | PTE_W;
+  pg_dir[(uint)USRSTART>>22] = (uint)u_tbl | PTE_P | PTE_W |PTE_U;
   for (k=0, j=USRPHY;k<1024;k++, j+=PAGE) {
-    u_tbl[k] = (j>>12) | PTE_P | PTE_W;
+    u_tbl[k] = (j&~((1<<12)-1)) | PTE_P | PTE_W | PTE_U;
   }
 }
   
